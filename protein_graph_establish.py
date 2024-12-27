@@ -4,7 +4,7 @@ from torchdrug import data, layers
 
 
 
-file_dir = './data/PDB'
+file_dir = './data/yeast/PDB'
 protein_data = {}
 files = os.listdir(file_dir)
 for pdb_file in files:
