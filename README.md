@@ -15,19 +15,24 @@ Predicting protein-protein interaction with interpretable bilinear attention net
 # Datasets
 The datasets we used in the study can be downloaded through the following links.
 
-* [Yeast dataset]( https://pan.baidu.com/s/1G2vMODUVNlMyucRXqRz--w?pwd=191c)  password: 191c
-* [Multi-species dataset]( https://pan.baidu.com/s/1PrTJdJ4TOLSzhWclIcqlUA?pwd=au29)  password: au29
-* [Multi-class dataset]( https://pan.baidu.com/s/1_GUXsFQIZ24iP002z3StPg?pwd=jdbt)  password: jdbt
+* [Yeast dataset]( https://pan.baidu.com/s/1G2vMODUVNlMyucRXqRz--w?pwd=191c)      password: 191c
+* [Multi-species dataset]( https://pan.baidu.com/s/1PrTJdJ4TOLSzhWclIcqlUA?pwd=au29)      password: au29
+* [Multi-class dataset]( https://pan.baidu.com/s/1_GUXsFQIZ24iP002z3StPg?pwd=jdbt)      password: jdbt
 
 
 # Run 
-After prepared with suitable environment, you can execute the following command to execute the code with default parameters.
+After prepared with suitable environment, you can execute the following .py files with default parameters.
+
+1.First, execute the code below to generate embeddings for the protein sequences.
 ```shell
-sh run.sh
+protein_sequence_embedding.py
 ```
-you can execute the following command to execute the code with default parameters.
+2.Next, execute the code below to generate structural data for the proteins.
 ```shell
-sh run.sh
+protein_graph_establish.py
 ```
-# Contact
-If you have any questions, comments, or would like to report a bug, please file a Github issue.
+3.Finally, implement downstream tasks by running the code below.
+```shell
+my_main.py
+```
+
