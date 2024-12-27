@@ -15,9 +15,9 @@ Predicting protein-protein interaction with interpretable bilinear attention net
 # Datasets
 The datasets we used in the study can be downloaded through the following links.
 
-* [Yeast dataset]( https://pan.baidu.com/s/1G2vMODUVNlMyucRXqRz--w?pwd=191c  password: 191c )
-* [Multi-species dataset]( https://pan.baidu.com/s/1PrTJdJ4TOLSzhWclIcqlUA?pwd=au29  password: au29 )
-* [Multi-class dataset]( https://pan.baidu.com/s/1_GUXsFQIZ24iP002z3StPg?pwd=jdbt  password: jdbt )
+* [Yeast dataset]( https://pan.baidu.com/s/1G2vMODUVNlMyucRXqRz--w?pwd=191c)  password: 191c
+* [Multi-species dataset]( https://pan.baidu.com/s/1PrTJdJ4TOLSzhWclIcqlUA?pwd=au29)  password: au29
+* [Multi-class dataset]( https://pan.baidu.com/s/1_GUXsFQIZ24iP002z3StPg?pwd=jdbt)  password: jdbt
 
 
 # Run 
