@@ -1,25 +1,68 @@
-
-from transformers import BertTokenizer, AutoTokenizer,BertModel, AutoModel
-import pandas as pd
+import os, zipfile
 import numpy as np
+import pandas as pd
+import torch
+from transformers import AutoTokenizer, AutoModel
 
-tokenizer_ = AutoTokenizer.from_pretrained("facebook/esm2_t33_650M_UR50D")
-model_ = AutoModel.from_pretrained("facebook/esm2_t33_650M_UR50D")
+MODEL_NAME = "facebook/esm2_t33_650M_UR50D"
+INPUT_TSV  = "./data/yeast/dictionary/protein.dictionary.tsv"
+OUTPUT_NPZ = "./data/yeast/dictionary/protein_embeddings_esm2.npz"
+TMP_NPZ    = OUTPUT_NPZ + ".tmp" 
+BATCH_SIZE = 50
 
-list_data={}
-#input prtotein raw sequnences
-protein_list = pd.read_csv('./data/yeast/dictionary/protein.dictionary.tsv',sep="\t", header=None)
-file_path = './data/yeast/dictionary/protein_embeddings_esm2.npz'
+# === helper: ghi 1 batch vào .npz (ZIP) ===
+_first_write_done = False
+def write_batch_npz(npz_tmp_path: str, items: dict[str, np.ndarray]) -> None:
+    global _first_write_done
+    mode = 'a'
+    if not _first_write_done:
+        if os.path.exists(npz_tmp_path):
+            os.remove(npz_tmp_path)
+        mode = 'w'
+        _first_write_done = True
+    with zipfile.ZipFile(npz_tmp_path, mode=mode, compression=zipfile.ZIP_DEFLATED) as zf:
+        for key, arr in items.items():
+            with zf.open(f"{key}.npy", 'w') as f:
+                np.save(f, arr)
 
+# === load model / data ===
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModel.from_pretrained(MODEL_NAME).eval()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
 
+df = pd.read_csv(INPUT_TSV, sep="\t", header=None, names=["name", "seq"])
 
-for i in range(len(protein_list)):
-    protein_name = protein_list.iloc[i, 0]
-    protein_seq = protein_list.iloc[i, 1]
-    outputs_ = model_(**tokenizer_(protein_seq, return_tensors='pt'))
-    protein_embed = outputs_.last_hidden_state[:, 1:-1, :]
-    protein_embed = protein_embed.sum(axis=0).detach().numpy()
-    list_data.update({protein_name: protein_embed})
-    print(i)
+last_idx = df.groupby("name").tail(1).reset_index().set_index("name")["index"].to_dict()
 
-np.savez(file_path, **list_data)
+batch = {}
+with torch.inference_mode():
+    for i, row in df.iterrows():
+        name = row["name"]
+        if i != last_idx[name]:
+            # có trùng tên
+            continue
+
+        seq  = row["seq"]
+        toks = tokenizer(seq, return_tensors="pt")
+        toks = {k: v.to(device) for k, v in toks.items()}
+
+        out = model(**toks)                      # [1, L, H]
+        emb = out.last_hidden_state[:, 1:-1, :]  # [1, L-2, H]
+        emb = emb.sum(dim=0).detach().cpu().numpy()
+
+        batch[name] = emb
+
+        if len(batch) >= BATCH_SIZE:
+            write_batch_npz(TMP_NPZ, batch)
+            batch.clear()
+            if device.type == "cuda":
+                torch.cuda.empty_cache()
+            print(f"Saved a batch at index {i}")
+
+    if batch:
+        write_batch_npz(TMP_NPZ, batch)
+        print("Saved final batch")
+
+os.replace(TMP_NPZ, OUTPUT_NPZ)
+print(f"Done. NPZ written to: {OUTPUT_NPZ}")

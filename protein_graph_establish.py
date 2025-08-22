@@ -4,12 +4,12 @@ from torchdrug import data, layers
 
 
 
-file_dir = './data/yeast/PDB'
+file_dir = 'E:\BaiduNetdiskDownload\yeast\PDB'
 protein_data = {}
 files = os.listdir(file_dir)
 for pdb_file in files:
     name = pdb_file[:-4]
-    protein = data.Protein.from_pdb(file_dir + '/' + pdb_file, atom_feature="position", bond_feature="length",
+    protein = data.Protein.from_pdb(file_dir + '\\' + pdb_file, atom_feature="position", bond_feature="length",
                                     residue_feature="symbol")
     if protein.num_residue > 1200:
         protein = protein[:1200]
